@@ -10,15 +10,13 @@ jobs:
       - uses: khan/pull-request-comment-trigger@master
         id: check
         with:
-          trigger: '~TRIGGER WORKFLOW~'
+          trigger: 'TRIGGER WORKFLOW'
           reaction: rocket
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-      - run: 'echo Found it!'
-        if: steps.check.outputs.triggered == 'true'
       - name: GitHub API Request
-        id: request
         if: steps.check.outputs.triggered == 'true'
+        id: request
         uses: octokit/request-action@v2.0.0
         with:
           route: ${{ github.event.issue.pull_request.url }}
@@ -32,3 +30,15 @@ jobs:
           echo "::set-output name=repo_name::${{ fromJson(steps.request.outputs.data).base.repo.full_name }}"
           echo "::set-output name=repo_clone_url::${{ fromJson(steps.request.outputs.data).base.repo.clone_url }}"
           echo "::set-output name=repo_ssh_url::${{ fromJson(steps.request.outputs.data).base.repo.ssh_url }}"
+      - name: clone branch of PR
+        if: steps.check.outputs.triggered == 'true'
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ steps.pr_data.outputs.branch }}
+      - name: Save comment in file
+        run: echo ${{steps.check.outputs.comment_body}} > comments/$(date +"%s").txt
+      - uses: stefanzweifel/git-auto-commit-action@v4.1.1
+        if: steps.check.outputs.triggered == 'true'
+        with:
+          commit_message: commit comment timestamp
