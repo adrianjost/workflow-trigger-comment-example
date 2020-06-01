@@ -38,7 +38,7 @@ jobs:
           ref: ${{ steps.pr_data.outputs.branch }}
       - name: Save comment in file
         if: steps.check.outputs.triggered == 'true'
-        run: echo ${{steps.check.outputs.comment_body}} > comments/$(date +"%s").txt
+        run: echo ${{ github.event.comment.body }} > comments/$(date +"%s").txt
       - uses: stefanzweifel/git-auto-commit-action@v4.1.1
         if: steps.check.outputs.triggered == 'true'
         with:
