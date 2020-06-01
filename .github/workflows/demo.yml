@@ -10,10 +10,17 @@ jobs:
       - uses: khan/pull-request-comment-trigger@master
         id: check
         with:
-          trigger: '@deploy'
+          trigger: '~TRIGGER WORKFLOW~'
           reaction: rocket
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - run: 'echo Found it!'
         if: steps.check.outputs.triggered == 'true'
-      - run: 'echo HEADREF: ${{ fromJson(steps.check.outputs.data).head.ref }}'
+      - name: Get PR informations
+        if: steps.check.outputs.triggered == 'true'
+        id: pr_data
+        run: |
+          echo "::set-output name=branch::${{ fromJson(steps.check.outputs.data).head.ref }}"
+          echo "::set-output name=repo_name::${{ fromJson(steps.check.outputs.data).base.repo.full_name }}"
+          echo "::set-output name=repo_clone_url::${{ fromJson(steps.check.outputs.data).base.repo.clone_url }}"
+          echo "::set-output name=repo_ssh_url::${{ fromJson(steps.check.outputs.data).base.repo.ssh_url }}"
